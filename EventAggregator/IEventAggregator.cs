@@ -2,8 +2,9 @@
 
 namespace EventAggregator
 {
-    public interface IEventAggregator : IObservable<IEvent>
+    public interface IEventAggregator
     {
-        void Publish(IEvent message);
+        IDisposable Subscribe<T>(Action<T> handler) where T : IEvent;
+        void Publish<T>(T message) where T : IEvent;
     }
 }
