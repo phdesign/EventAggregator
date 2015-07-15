@@ -13,8 +13,8 @@ namespace EventAggregator.Tests
             // Arrange
 
             var eventAggregator = new EventAggregator();
-            var observer1 = new Mock<Action<TestEvent>>();
-            var observer2 = new Mock<Action<OtherEvent>>();
+            var observer1 = new Mock<IHandle<TestEvent>>();
+            var observer2 = new Mock<IHandle<OtherEvent>>();
 
             eventAggregator.Subscribe(observer1.Object);
             eventAggregator.Subscribe(observer2.Object);
@@ -29,8 +29,8 @@ namespace EventAggregator.Tests
 
             // Assert
 
-            observer1.Verify(x => x(testEvent), Times.Once);
-            observer2.Verify(x => x(otherEvent), Times.Once);
+            observer1.Verify(x => x.Handle(testEvent), Times.Once);
+            observer2.Verify(x => x.Handle(otherEvent), Times.Once);
         }
 
         [TestMethod]
@@ -39,7 +39,7 @@ namespace EventAggregator.Tests
             // Arrange
 
             var eventAggregator = new EventAggregator();
-            var observer1 = new Mock<Action<TestEvent>>();
+            var observer1 = new Mock<IHandle<TestEvent>>();
 
             var unsubscribe = eventAggregator.Subscribe(observer1.Object);
             var testEvent1 = new TestEvent();
@@ -53,8 +53,8 @@ namespace EventAggregator.Tests
 
             // Assert
 
-            observer1.Verify(x => x(testEvent1), Times.Once);
-            observer1.Verify(x => x(testEvent2), Times.Never);
+            observer1.Verify(x => x.Handle(testEvent1), Times.Once);
+            observer1.Verify(x => x.Handle(testEvent2), Times.Never);
         }
 
         [TestMethod]
@@ -63,8 +63,8 @@ namespace EventAggregator.Tests
             // Arrange
 
             var eventAggregator = new EventAggregator();
-            var observer1 = new Mock<Action<IEvent>>();
-            var observer2 = new Mock<Action<TestEvent>>();
+            var observer1 = new Mock<IHandle<IEvent>>();
+            var observer2 = new Mock<IHandle<TestEvent>>();
 
             eventAggregator.Subscribe(observer1.Object);
             eventAggregator.Subscribe(observer2.Object);
@@ -79,25 +79,12 @@ namespace EventAggregator.Tests
 
             // Assert
 
-            observer1.Verify(x => x(It.IsAny<IEvent>()), Times.Exactly(2));
-            observer2.Verify(x => x(It.IsAny<TestEvent>()), Times.Exactly(2));
+            observer1.Verify(x => x.Handle(It.IsAny<IEvent>()), Times.Exactly(2));
+            observer2.Verify(x => x.Handle(It.IsAny<TestEvent>()), Times.Exactly(2));
         }
 
         public class TestEvent : IEvent { }
         public class OtherEvent : IEvent { }
         public class DerivedEvent : TestEvent { }
-
-        public class TestEventHandler : IObserve<TestEvent>
-        {
-            public void Subscribe(IEventAggregator aggregator)
-            {
-                aggregator.Subscribe<TestEvent>(Handle);
-            }
-
-            public void Handle(TestEvent message)
-            {
-                throw new NotImplementedException();
-            }
-        }
     }
 }

@@ -9,13 +9,13 @@ namespace EventAggregator
     {
         private readonly Dictionary<Type, List<Action<IEvent>>> _handlers = new Dictionary<Type, List<Action<IEvent>>>();
 
-        public IDisposable Subscribe<T>(Action<T> handler) where T : IEvent
+        public IDisposable Subscribe<T>(IHandle<T> handler) where T : IEvent
         {
             // Check whether handler is already registered. If not, add it 
             List<Action<IEvent>> handlers;
             if (!_handlers.TryGetValue(typeof(T), out handlers))
                 handlers = _handlers[typeof(T)] = new List<Action<IEvent>>();
-            Action<IEvent> surrogate = x => handler((T)x);
+            Action<IEvent> surrogate = x => handler.Handle((T)x);
             handlers.Add(surrogate);
             return new Unsubscriber(handlers, surrogate);
         }
