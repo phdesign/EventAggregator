@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace EventAggregator
@@ -25,8 +26,9 @@ namespace EventAggregator
         /// <param name="message">The event to publish, can be any implementation of IEvent.</param>
         public void Publish<T>(T message) where T : IEvent
         {
-            if (!_handlers.ContainsKey(message.GetType())) return;
-            foreach (var handler in _handlers[message.GetType()])
+            // Send message to all subscribers to the type of subscribers of a subtype.
+            var handlers = _handlers.Where(x => x.Key.IsInstanceOfType(message)).SelectMany(x => x.Value);
+            foreach (var handler in handlers)
                 handler(message);
         }
     }
